@@ -18,13 +18,25 @@ function interpolateArray(a, b, t) {
     return result;
 }
 
+function zip(a, b) {
+    var result = [];
+    for (var i = 0; i < Math.min(a.length, b.length); i++) {
+        result.push([a[i], b[i]]);
+    }
+    return result;
+}
+
 exports['interpolated'] = function(f) {
-    if (!f.stops) {
+    var stops;
+    if (f.domain && f.range) {
+        stops = zip(f.domain, f.range);
+    } else if (f.stops) {
+        stops = f.stops
+    } else {
         return constant(f);
     }
 
-    var stops = f.stops,
-        base = f.base || 1,
+    var base = f.base || 1,
         interpolate = Array.isArray(stops[0][1]) ? interpolateArray : interpolateNumber;
 
     return function(z) {

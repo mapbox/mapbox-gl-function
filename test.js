@@ -25,6 +25,36 @@ test('interpolated, single stop', function(t) {
     t.end();
 });
 
+test('interpolated, single range element', function(t) {
+    var f = func.interpolated({domain: [1], range: [1]});
+    t.equal(f(0), 1);
+    t.equal(f(1), 1);
+    t.equal(f(3), 1);
+    t.end();
+});
+
+test('interpolated, multiple range elements', function(t) {
+    var f = func.interpolated({domain: [1,2], range: [1,2]});
+    t.equal(f(1), 1);
+    t.equal(f(1.5), 1.5);
+    t.equal(f(2), 2);
+    t.end();
+});
+
+test('interpolated, different number of domain and range elements', function(t) {
+    var f = func.interpolated({domain: [1,2,-1000], range: [1,2]});
+    t.equal(f(1), 1);
+    t.equal(f(1.5), 1.5);
+    t.equal(f(2), 2);
+
+    f = func.interpolated({domain: [1,2], range: [1,2,-1000]});
+    t.equal(f(1), 1);
+    t.equal(f(1.5), 1.5);
+    t.equal(f(2), 2);
+
+    t.end();
+});
+
 test('interpolated, default base', function(t) {
     var f = func.interpolated({stops: [[1, 1], [5, 10]]});
     t.equal(f(0), 1);
