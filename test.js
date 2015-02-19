@@ -75,6 +75,16 @@ test('interpolated, specified base', function(t) {
     t.end();
 });
 
+test('interpolated, specified property', function(t) {
+    var f = func.interpolated({stops: [[1, 1], [5, 10]], base: 2, property: 'baz'});
+    t.equal(f(0, {baz: 0}),  1);
+    t.equal(f(0, {baz: 1}),  1);
+    t.equal(f(0, {baz: 3}),  2.8);
+    t.equal(f(0, {baz: 5}),  10);
+    t.equal(f(0, {baz: 11}), 10);
+    t.end();
+});
+
 test('interpolated, array', function(t) {
     var f = func.interpolated({stops: [[1, [1, 2]], [5, [5, 10]]]});
     t.deepEqual(f(0), [1, 2]);

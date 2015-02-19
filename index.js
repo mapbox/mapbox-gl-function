@@ -39,30 +39,34 @@ exports['interpolated'] = function(f) {
     var base = f.base || 1,
         interpolate = Array.isArray(stops[0][1]) ? interpolateArray : interpolateNumber;
 
-    return function(z) {
-        // find the two stops which the current z is between
+    return function(z, properties) {
+        // If this is a property scale, get the property value; otherwise get
+        // the zoom value.
+        var value = f.property ? properties[f.property] : z;
+
+        // find the two stops which the current value is between
         var low, high;
 
         for (var i = 0; i < stops.length; i++) {
             var stop = stops[i];
 
-            if (stop[0] <= z) {
+            if (stop[0] <= value) {
                 low = stop;
             }
 
-            if (stop[0] > z) {
+            if (stop[0] > value) {
                 high = stop;
                 break;
             }
         }
 
         if (low && high) {
-            var zoomDiff = high[0] - low[0],
-                zoomProgress = z - low[0],
+            var valueDiff = high[0] - low[0],
+                valueProgress = value - low[0],
 
                 t = base === 1 ?
-                zoomProgress / zoomDiff :
-                (Math.pow(base, zoomProgress) - 1) / (Math.pow(base, zoomDiff) - 1);
+                valueProgress / valueDiff :
+                (Math.pow(base, valueProgress) - 1) / (Math.pow(base, valueDiff) - 1);
 
             return interpolate(low[1], high[1], t);
 
