@@ -26,6 +26,10 @@ function zip(a, b) {
     return result;
 }
 
+exports['is'] = function(f) {
+    return (f.domain && f.range) || !!f.stops;
+}
+
 exports['interpolated'] = function(f) {
     var stops;
     if (f.domain && f.range) {
