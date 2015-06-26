@@ -1,7 +1,7 @@
 'use strict';
 
 var test = require('tape');
-var MapboxGLScale = require('../');
+var MapboxGLFunction = require('../');
 
 test('function types', function(t) {
 
@@ -10,7 +10,7 @@ test('function types', function(t) {
         t.test('range types', function(t) {
 
             t.test('array', function(t) {
-                var f = MapboxGLScale([1]);
+                var f = MapboxGLFunction([1]);
 
                 t.deepEqual(f({'$zoom': 0})({}), [1]);
                 t.deepEqual(f({'$zoom': 1})({}), [1]);
@@ -20,7 +20,7 @@ test('function types', function(t) {
             });
 
             t.test('number', function(t) {
-                var f = MapboxGLScale(1);
+                var f = MapboxGLFunction(1);
 
                 t.equal(f({'$zoom': 0})({}), 1);
                 t.equal(f({'$zoom': 1})({}), 1);
@@ -30,7 +30,7 @@ test('function types', function(t) {
             });
 
             t.test('string', function(t) {
-                var f = MapboxGLScale('mapbox');
+                var f = MapboxGLFunction('mapbox');
 
                 t.equal(f({'$zoom': 0})({}), 'mapbox');
                 t.equal(f({'$zoom': 1})({}), 'mapbox');
@@ -46,7 +46,7 @@ test('function types', function(t) {
     t.test('exponential', function(t) {
 
         t.test('base', function(t) {
-            var f = MapboxGLScale({
+            var f = MapboxGLFunction({
                 type: 'exponential',
                 domain: [1, 3],
                 range: [2, 6],
@@ -64,7 +64,7 @@ test('function types', function(t) {
 
         t.test('domain & range', function(t) {
             t.test('one element', function(t) {
-                var f = MapboxGLScale({
+                var f = MapboxGLFunction({
                     type: 'exponential',
                     domain: [1],
                     range: [2]
@@ -78,7 +78,7 @@ test('function types', function(t) {
             });
 
             t.test('two elements', function(t) {
-                var f = MapboxGLScale({
+                var f = MapboxGLFunction({
                     type: 'exponential',
                     domain: [1, 3],
                     range: [2, 6]
@@ -94,7 +94,7 @@ test('function types', function(t) {
             });
 
             t.test('three elements', function(t) {
-                var f = MapboxGLScale({
+                var f = MapboxGLFunction({
                     type: 'exponential',
                     domain: [1, 3, 5],
                     range: [2, 6, 10]
@@ -118,7 +118,7 @@ test('function types', function(t) {
     t.test('categorical', function(t) {
 
         t.test('one element', function(t) {
-            var f = MapboxGLScale({
+            var f = MapboxGLFunction({
                 type: 'categorical',
                 domain: ['umpteen'],
                 range: [42],
@@ -132,7 +132,7 @@ test('function types', function(t) {
         });
 
         t.test('two elements', function(t) {
-            var f = MapboxGLScale({
+            var f = MapboxGLFunction({
                 type: 'categorical',
                 domain: ['umpteen', 'eleventy'],
                 range: [42, 110],
@@ -152,7 +152,7 @@ test('function types', function(t) {
     t.test('interval', function(t) {
 
         t.test('one domain element', function(t) {
-            var f = MapboxGLScale({
+            var f = MapboxGLFunction({
                 type: 'interval',
                 domain: [0],
                 range: [11, 111],
@@ -167,7 +167,7 @@ test('function types', function(t) {
         });
 
         t.test('two domain elements', function(t) {
-            var f = MapboxGLScale({
+            var f = MapboxGLFunction({
                 type: 'interval',
                 domain: [0, 1],
                 range: [11, 111, 1111],
@@ -190,7 +190,7 @@ test('function types', function(t) {
 test('property', function(t) {
 
     t.test('missing property', function(t) {
-        var f = MapboxGLScale({
+        var f = MapboxGLFunction({
             type: 'categorical',
             domain: ['map', 'box'],
             range: ['neat', 'swell'],
@@ -203,7 +203,7 @@ test('property', function(t) {
     });
 
     t.test('global property', function(t) {
-        var f = MapboxGLScale({
+        var f = MapboxGLFunction({
             type: 'categorical',
             domain: ['map', 'box'],
             range: ['neat', 'swell'],
@@ -216,7 +216,7 @@ test('property', function(t) {
     });
 
     t.test('feature property', function(t) {
-        var f = MapboxGLScale({
+        var f = MapboxGLFunction({
             type: 'categorical',
             domain: ['map', 'box'],
             range: ['neat', 'swell'],
@@ -234,7 +234,7 @@ test('property', function(t) {
 test('isConstant', function(t) {
 
     t.test('constant', function(t) {
-        var f = MapboxGLScale(1);
+        var f = MapboxGLFunction(1);
 
         t.ok(f.isConstant);
         t.ok(f({}).isConstant);
@@ -249,7 +249,7 @@ test('isConstant', function(t) {
     });
 
     t.test('global', function(t) {
-        var f = MapboxGLScale({
+        var f = MapboxGLFunction({
             domain: [1],
             range: [1],
             property: '$zoom'
@@ -268,7 +268,7 @@ test('isConstant', function(t) {
     });
 
     t.test('feature', function(t) {
-        var f = MapboxGLScale({
+        var f = MapboxGLFunction({
             domain: [1],
             range: [1],
             property: 'mapbox'

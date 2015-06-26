@@ -6,63 +6,31 @@ module.exports = create;
 module.exports.is = is;
 
 function create(parameters) {
-    var property = parameters.property !== undefined ? parameters.property : '$zoom';
-
-    var feature, global;
-    var isFeatureConstant = false;
-    var isGlobalConstant = false;
     if (!is(parameters)) {
-        global = function() { return feature; };
-        feature = function() { return parameters; };
-        isGlobalConstant = true;
-
-    } else if (property[0] === GLOBAL_ATTRIBUTE_PREFIX) {
-        global = function(values) {
-            var value = evaluate(parameters, values);
-            feature = function() { return value; };
-            feature.isConstant = isFeatureConstant;
-            feature.isGlobalConstant  = isGlobalConstant;
-            feature.isFeatureConstant = isFeatureConstant;
-            return feature;
-        };
-        isFeatureConstant = true;
-
-    } else {
-        global = function() { return feature; };
-        feature = function(values) { return evaluate(parameters, values); };
+        return create_(true, true, function() { return parameters; });
     }
 
-    if (isGlobalConstant) isFeatureConstant = true;
-
-    global.isConstant = isGlobalConstant;
-    global.isGlobalConstant = isGlobalConstant;
-    global.isFeatureConstant = isFeatureConstant;
-
-    if (feature) {
-        feature.isConstant = isFeatureConstant;
-        feature.isGlobalConstant  = isGlobalConstant;
-        feature.isFeatureConstant = isFeatureConstant;
-    }
-
-    return global;
-}
-
-function evaluate(parameters, values) {
-    assert(typeof values === 'object');
     var property = parameters.property !== undefined ? parameters.property : '$zoom';
-    var value = values[property];
+    var isGlobalConstant = false;
+    var isFeatureConstant = property[0] === GLOBAL_ATTRIBUTE_PREFIX;
 
-    if (value === undefined) {
-        return parameters.range[0];
-    } else if (!parameters.type || parameters.type === 'exponential') {
-        return evaluateExponential(parameters, value);
-    } else if (parameters.type === 'interval') {
-        return evaluateInterval(parameters, value);
-    } else if (parameters.type === 'categorical') {
-        return evaluateCategorical(parameters, value);
-    } else {
-        assert(false, 'Invalid function type "' + parameters.type + '"');
-    }
+    return create_(isGlobalConstant, isFeatureConstant, function(values) {
+        assert(typeof values === 'object');
+        var property = parameters.property !== undefined ? parameters.property : '$zoom';
+        var value = values[property];
+
+        if (value === undefined) {
+            return parameters.range[0];
+        } else if (!parameters.type || parameters.type === 'exponential') {
+            return evaluateExponential(parameters, value);
+        } else if (parameters.type === 'interval') {
+            return evaluateInterval(parameters, value);
+        } else if (parameters.type === 'categorical') {
+            return evaluateCategorical(parameters, value);
+        } else {
+            assert(false, 'Invalid function type "' + parameters.type + '"');
+        }
+    });
 }
 
 function evaluateCategorical(parameters, value) {
@@ -148,4 +116,46 @@ function assert(predicate, message) {
     if (!predicate) {
         throw new Error(message || 'Assertion failed');
     }
+}
+
+function create_(isGlobalConstant, isFeatureConstant, calculate) {
+    var featureFunction, globalFunction;
+
+    if (isGlobalConstant) {
+        var value = calculate({});
+        featureFunction = function() { return value; };
+        globalFunction = function() { return featureFunction; };
+        featureFunction.value =  value;
+        globalFunction.value = value;
+
+    } else if (isFeatureConstant) {
+        globalFunction = function(input) {
+            var value = calculate(input);
+            featureFunction = function() { return value; };
+            featureFunction.isConstant = isFeatureConstant;
+            featureFunction.isGlobalConstant  = isGlobalConstant;
+            featureFunction.isFeatureConstant = isFeatureConstant;
+            featureFunction.value = value;
+            return featureFunction;
+        };
+
+    } else {
+        // TODO maybe support passing global params to the calculate function, requires
+        // creating another scope.
+        featureFunction = function(input) { return calculate(input); };
+        globalFunction = function() { return featureFunction; };
+
+    }
+
+    globalFunction.isConstant = isGlobalConstant;
+    globalFunction.isGlobalConstant = isGlobalConstant;
+    globalFunction.isFeatureConstant = isFeatureConstant;
+
+    if (featureFunction) {
+        featureFunction.isConstant = isFeatureConstant;
+        featureFunction.isGlobalConstant  = isGlobalConstant;
+        featureFunction.isFeatureConstant = isFeatureConstant;
+    }
+
+    return globalFunction;
 }
