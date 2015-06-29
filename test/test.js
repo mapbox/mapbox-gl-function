@@ -1,7 +1,7 @@
 'use strict';
 
 var test = require('tape');
-var MapboxGLScale = require('../');
+var MapboxGLFunction = require('../');
 
 test('function types', function(t) {
 
@@ -10,7 +10,7 @@ test('function types', function(t) {
         t.test('range types', function(t) {
 
             t.test('array', function(t) {
-                var f = MapboxGLScale([1]);
+                var f = MapboxGLFunction([1]);
 
                 t.deepEqual(f({'$zoom': 0})({}), [1]);
                 t.deepEqual(f({'$zoom': 1})({}), [1]);
@@ -20,7 +20,7 @@ test('function types', function(t) {
             });
 
             t.test('number', function(t) {
-                var f = MapboxGLScale(1);
+                var f = MapboxGLFunction(1);
 
                 t.equal(f({'$zoom': 0})({}), 1);
                 t.equal(f({'$zoom': 1})({}), 1);
@@ -30,7 +30,7 @@ test('function types', function(t) {
             });
 
             t.test('string', function(t) {
-                var f = MapboxGLScale('mapbox');
+                var f = MapboxGLFunction('mapbox');
 
                 t.equal(f({'$zoom': 0})({}), 'mapbox');
                 t.equal(f({'$zoom': 1})({}), 'mapbox');
@@ -46,7 +46,7 @@ test('function types', function(t) {
     t.test('exponential', function(t) {
 
         t.test('base', function(t) {
-            var f = MapboxGLScale({
+            var f = MapboxGLFunction({
                 type: 'exponential',
                 domain: [1, 3],
                 range: [2, 6],
@@ -64,7 +64,7 @@ test('function types', function(t) {
 
         t.test('domain & range', function(t) {
             t.test('one element', function(t) {
-                var f = MapboxGLScale({
+                var f = MapboxGLFunction({
                     type: 'exponential',
                     domain: [1],
                     range: [2]
@@ -78,7 +78,7 @@ test('function types', function(t) {
             });
 
             t.test('two elements', function(t) {
-                var f = MapboxGLScale({
+                var f = MapboxGLFunction({
                     type: 'exponential',
                     domain: [1, 3],
                     range: [2, 6]
@@ -94,7 +94,7 @@ test('function types', function(t) {
             });
 
             t.test('three elements', function(t) {
-                var f = MapboxGLScale({
+                var f = MapboxGLFunction({
                     type: 'exponential',
                     domain: [1, 3, 5],
                     range: [2, 6, 10]
@@ -118,7 +118,7 @@ test('function types', function(t) {
     t.test('categorical', function(t) {
 
         t.test('one element', function(t) {
-            var f = MapboxGLScale({
+            var f = MapboxGLFunction({
                 type: 'categorical',
                 domain: ['umpteen'],
                 range: [42],
@@ -132,7 +132,7 @@ test('function types', function(t) {
         });
 
         t.test('two elements', function(t) {
-            var f = MapboxGLScale({
+            var f = MapboxGLFunction({
                 type: 'categorical',
                 domain: ['umpteen', 'eleventy'],
                 range: [42, 110],
@@ -152,7 +152,7 @@ test('function types', function(t) {
     t.test('interval', function(t) {
 
         t.test('one domain element', function(t) {
-            var f = MapboxGLScale({
+            var f = MapboxGLFunction({
                 type: 'interval',
                 domain: [0],
                 range: [11, 111],
@@ -167,7 +167,7 @@ test('function types', function(t) {
         });
 
         t.test('two domain elements', function(t) {
-            var f = MapboxGLScale({
+            var f = MapboxGLFunction({
                 type: 'interval',
                 domain: [0, 1],
                 range: [11, 111, 1111],
@@ -190,7 +190,7 @@ test('function types', function(t) {
 test('property', function(t) {
 
     t.test('missing property', function(t) {
-        var f = MapboxGLScale({
+        var f = MapboxGLFunction({
             type: 'categorical',
             domain: ['map', 'box'],
             range: ['neat', 'swell'],
@@ -203,7 +203,7 @@ test('property', function(t) {
     });
 
     t.test('global property', function(t) {
-        var f = MapboxGLScale({
+        var f = MapboxGLFunction({
             type: 'categorical',
             domain: ['map', 'box'],
             range: ['neat', 'swell'],
@@ -216,7 +216,7 @@ test('property', function(t) {
     });
 
     t.test('feature property', function(t) {
-        var f = MapboxGLScale({
+        var f = MapboxGLFunction({
             type: 'categorical',
             domain: ['map', 'box'],
             range: ['neat', 'swell'],
@@ -234,7 +234,7 @@ test('property', function(t) {
 test('isConstant', function(t) {
 
     t.test('constant', function(t) {
-        var f = MapboxGLScale(1);
+        var f = MapboxGLFunction(1);
 
         t.ok(f.isConstant);
         t.ok(f({}).isConstant);
@@ -245,11 +245,14 @@ test('isConstant', function(t) {
         t.ok(f.isFeatureConstant);
         t.ok(f({}).isFeatureConstant);
 
+        t.equal(f.value, 1);
+        t.equal(f({}).value, 1);
+
         t.end();
     });
 
     t.test('global', function(t) {
-        var f = MapboxGLScale({
+        var f = MapboxGLFunction({
             domain: [1],
             range: [1],
             property: '$zoom'
@@ -264,11 +267,14 @@ test('isConstant', function(t) {
         t.ok(f.isFeatureConstant);
         t.ok(f({}).isFeatureConstant);
 
+        t.notOk(f.value);
+        t.equal(f({'$zoom': 0}).value, 1);
+
         t.end();
     });
 
     t.test('feature', function(t) {
-        var f = MapboxGLScale({
+        var f = MapboxGLFunction({
             domain: [1],
             range: [1],
             property: 'mapbox'
@@ -283,9 +289,117 @@ test('isConstant', function(t) {
         t.notOk(f.isFeatureConstant);
         t.notOk(f({}).isFeatureConstant);
 
+        t.notOk(f.value);
+        t.notOk(f({}).value);
+
         t.end();
     });
 
     t.end();
 
 });
+
+test('mix', function(t) {
+
+    t.test('global constant, global constant', function(t) {
+        var lower = MapboxGLFunction(0);
+        var upper = MapboxGLFunction(1);
+
+        t.ok(MapboxGLFunction.mix(lower, upper, 0).isFeatureConstant);
+        t.ok(MapboxGLFunction.mix(lower, upper, 0).isGlobalConstant);
+
+        t.equal(MapboxGLFunction.mix(lower, upper, 0).value, 0);
+        t.equal(MapboxGLFunction.mix(lower, upper, 0.5).value, 0.5);
+        t.equal(MapboxGLFunction.mix(lower, upper, 1).value, 1);
+
+        t.end();
+    });
+
+    t.test('feature constant, global constant', function(t) {
+        var lower = MapboxGLFunction({domain: [0, 1], range: [1, 2], property: '$zoom'});
+        var upper = MapboxGLFunction(0);
+
+        t.ok(MapboxGLFunction.mix(lower, upper, 0).isFeatureConstant);
+        t.notOk(MapboxGLFunction.mix(lower, upper, 0).isGlobalConstant);
+
+        t.equal(MapboxGLFunction.mix(lower, upper, 0)({$zoom: 1}).value, 2);
+        t.equal(MapboxGLFunction.mix(lower, upper, 0.5)({$zoom: 1}).value, 1);
+        t.equal(MapboxGLFunction.mix(lower, upper, 1)({$zoom: 1}).value, 0);
+
+        t.end();
+    });
+
+    t.test('global constant, feature constant', function(t) {
+        var lower = MapboxGLFunction(0);
+        var upper = MapboxGLFunction({domain: [0, 1], range: [1, 2], property: '$zoom'});
+
+        t.ok(MapboxGLFunction.mix(lower, upper, 0).isFeatureConstant);
+        t.notOk(MapboxGLFunction.mix(lower, upper, 0).isGlobalConstant);
+
+        t.equal(MapboxGLFunction.mix(lower, upper, 0)({$zoom: 1}).value, 0);
+        t.equal(MapboxGLFunction.mix(lower, upper, 0.5)({$zoom: 1}).value, 1);
+        t.equal(MapboxGLFunction.mix(lower, upper, 1)({$zoom: 1}).value, 2);
+
+        t.end();
+    });
+
+    t.test('feature constant, feature constant', function(t) {
+        var lower = MapboxGLFunction({domain: [0, 1], range: [0, 1], property: '$zoom'});
+        var upper = MapboxGLFunction({domain: [0, 1], range: [1, 2], property: '$zoom'});
+
+        t.ok(MapboxGLFunction.mix(lower, upper, 0).isFeatureConstant);
+        t.notOk(MapboxGLFunction.mix(lower, upper, 0).isGlobalConstant);
+
+        t.equal(MapboxGLFunction.mix(lower, upper, 0)({$zoom: 1}).value, 1);
+        t.equal(MapboxGLFunction.mix(lower, upper, 0.5)({$zoom: 1}).value, 1.5);
+        t.equal(MapboxGLFunction.mix(lower, upper, 1)({$zoom: 1}).value, 2);
+
+        t.end();
+    });
+
+    t.test('feature constant, not constant', function(t) {
+        var lower = MapboxGLFunction({domain: [0, 1], range: [0, 1], property: '$zoom'});
+        var upper = MapboxGLFunction({domain: [0, 1], range: [1, 2], property: 'mapbox'});
+
+        t.notOk(MapboxGLFunction.mix(lower, upper, 0).isFeatureConstant);
+        t.notOk(MapboxGLFunction.mix(lower, upper, 0).isGlobalConstant);
+
+        t.equal(MapboxGLFunction.mix(lower, upper, 0)({$zoom: 1})({mapbox: 2}), 1);
+        t.equal(MapboxGLFunction.mix(lower, upper, 0.5)({$zoom: 1})({mapbox: 2}), 1.5);
+        t.equal(MapboxGLFunction.mix(lower, upper, 1)({$zoom: 1})({mapbox: 2}), 2);
+
+        t.end();
+    });
+
+    t.test('feature constant, not constant', function(t) {
+        var lower = MapboxGLFunction({domain: [0, 1], range: [1, 2], property: 'mapbox'});
+        var upper = MapboxGLFunction({domain: [0, 1], range: [0, 1], property: '$zoom'});
+
+        t.notOk(MapboxGLFunction.mix(lower, upper, 0).isFeatureConstant);
+        t.notOk(MapboxGLFunction.mix(lower, upper, 0).isGlobalConstant);
+
+        t.equal(MapboxGLFunction.mix(lower, upper, 0)({$zoom: 1})({mapbox: 2}), 2);
+        t.equal(MapboxGLFunction.mix(lower, upper, 0.5)({$zoom: 1})({mapbox: 2}), 1.5);
+        t.equal(MapboxGLFunction.mix(lower, upper, 1)({$zoom: 1})({mapbox: 2}), 1);
+
+        t.end();
+    });
+
+    t.test('not constant, not constant', function(t) {
+        var lower = MapboxGLFunction({domain: [0, 1], range: [1, 2], property: 'mapbox'});
+        var upper = MapboxGLFunction({domain: [0, 1], range: [0, 1], property: 'mapbox'});
+
+        t.notOk(MapboxGLFunction.mix(lower, upper, 0).isFeatureConstant);
+        t.notOk(MapboxGLFunction.mix(lower, upper, 0).isGlobalConstant);
+
+        t.equal(MapboxGLFunction.mix(lower, upper, 0)({$zoom: 1})({mapbox: 2}), 2);
+        t.equal(MapboxGLFunction.mix(lower, upper, 0.5)({$zoom: 1})({mapbox: 2}), 1.5);
+        t.equal(MapboxGLFunction.mix(lower, upper, 1)({$zoom: 1})({mapbox: 2}), 1);
+
+        t.end();
+    });
+
+    t.end();
+
+});
+
