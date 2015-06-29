@@ -4,33 +4,39 @@ var GLOBAL_ATTRIBUTE_PREFIX = '$';
 
 module.exports = create;
 module.exports.is = is;
+module.exports.mix = mix;
 
 function create(parameters) {
-    if (!is(parameters)) {
-        return create_(true, true, function() { return parameters; });
-    }
-
     var property = parameters.property !== undefined ? parameters.property : '$zoom';
-    var isGlobalConstant = false;
-    var isFeatureConstant = property[0] === GLOBAL_ATTRIBUTE_PREFIX;
 
-    return create_(isGlobalConstant, isFeatureConstant, function(values) {
-        assert(typeof values === 'object');
-        var property = parameters.property !== undefined ? parameters.property : '$zoom';
-        var value = values[property];
+    var isGlobalConstant = !is(parameters);
+    var isFeatureConstant = isGlobalConstant || property[0] === GLOBAL_ATTRIBUTE_PREFIX;
 
-        if (value === undefined) {
-            return parameters.range[0];
-        } else if (!parameters.type || parameters.type === 'exponential') {
-            return evaluateExponential(parameters, value);
-        } else if (parameters.type === 'interval') {
-            return evaluateInterval(parameters, value);
-        } else if (parameters.type === 'categorical') {
-            return evaluateCategorical(parameters, value);
-        } else {
-            assert(false, 'Invalid function type "' + parameters.type + '"');
-        }
-    });
+    if (isGlobalConstant) {
+        return create_(parameters);
+    } else if (isFeatureConstant) {
+        return create_(null, function(values) { return evaluate(parameters, values); });
+    } else {
+        return create_(null, null, function(values) { return evaluate(parameters, values); });
+    }
+}
+
+function evaluate(parameters, values) {
+    assert(typeof values === 'object');
+    var property = parameters.property !== undefined ? parameters.property : '$zoom';
+    var value = values[property];
+
+    if (value === undefined) {
+        return parameters.range[0];
+    } else if (!parameters.type || parameters.type === 'exponential') {
+        return evaluateExponential(parameters, value);
+    } else if (parameters.type === 'interval') {
+        return evaluateInterval(parameters, value);
+    } else if (parameters.type === 'categorical') {
+        return evaluateCategorical(parameters, value);
+    } else {
+        assert(false, 'Invalid function type "' + parameters.type + '"');
+    }
 }
 
 function evaluateCategorical(parameters, value) {
@@ -112,50 +118,123 @@ function is(value) {
     return typeof value === 'object' && value.range && value.domain;
 }
 
-function assert(predicate, message) {
-    if (!predicate) {
-        throw new Error(message || 'Assertion failed');
-    }
-}
+function create_(constant, globalInnerFunction, featureInnerFunction) {
+    var globalFunction, featureFunction;
+    if (!globalInnerFunction && !featureInnerFunction) {
+        featureFunction = function() { return constant; };
+        featureFunction.value =  constant;
+        featureFunction.isConstant = true;
+        featureFunction.isGlobalConstant = true;
+        featureFunction.isFeatureConstant = true;
 
-function create_(isGlobalConstant, isFeatureConstant, calculate) {
-    var featureFunction, globalFunction;
-
-    if (isGlobalConstant) {
-        var value = calculate({});
-        featureFunction = function() { return value; };
         globalFunction = function() { return featureFunction; };
-        featureFunction.value =  value;
-        globalFunction.value = value;
+        globalFunction.value = constant;
+        globalFunction.isConstant = true;
+        globalFunction.isGlobalConstant = true;
+        globalFunction.isFeatureConstant = true;
 
-    } else if (isFeatureConstant) {
-        globalFunction = function(input) {
-            var value = calculate(input);
+    } else if (globalInnerFunction && featureInnerFunction) {
+        globalFunction = function(globalInput) {
+            var globalOutput = globalInnerFunction(globalInput);
+            featureFunction = function(featureInput) {
+                return featureInnerFunction(featureInput, globalOutput);
+            };
+            featureFunction.isConstant = false;
+            featureFunction.isGlobalConstant = false;
+            featureFunction.isFeatureConstant = false;
+
+            return featureFunction;
+        };
+
+        globalFunction.isConstant = false;
+        globalFunction.isGlobalConstant = false;
+        globalFunction.isFeatureConstant = false;
+
+    } else if (globalInnerFunction) {
+        globalFunction = function(globalInput) {
+            var value = globalInnerFunction(globalInput);
             featureFunction = function() { return value; };
-            featureFunction.isConstant = isFeatureConstant;
-            featureFunction.isGlobalConstant  = isGlobalConstant;
-            featureFunction.isFeatureConstant = isFeatureConstant;
+            featureFunction.isConstant = true;
+            featureFunction.isGlobalConstant = false;
+            featureFunction.isFeatureConstant = true;
+
             featureFunction.value = value;
             return featureFunction;
         };
 
-    } else {
-        // TODO maybe support passing global params to the calculate function, requires
-        // creating another scope.
-        featureFunction = function(input) { return calculate(input); };
+        globalFunction.isConstant = false;
+        globalFunction.isGlobalConstant = false;
+        globalFunction.isFeatureConstant = true;
+
+    } else if (featureInnerFunction) {
+        featureFunction = function(featureInput) {
+            return featureInnerFunction(featureInput);
+        };
+        featureFunction.isConstant = false;
+        featureFunction.isGlobalConstant = false;
+        featureFunction.isFeatureConstant = false;
+
         globalFunction = function() { return featureFunction; };
+        globalFunction.isConstant = false;
+        globalFunction.isGlobalConstant = false;
+        globalFunction.isFeatureConstant = false;
 
-    }
-
-    globalFunction.isConstant = isGlobalConstant;
-    globalFunction.isGlobalConstant = isGlobalConstant;
-    globalFunction.isFeatureConstant = isFeatureConstant;
-
-    if (featureFunction) {
-        featureFunction.isConstant = isFeatureConstant;
-        featureFunction.isGlobalConstant  = isGlobalConstant;
-        featureFunction.isFeatureConstant = isFeatureConstant;
+    } else {
+        assert(false);
     }
 
     return globalFunction;
+}
+
+function mix(lowerFunction, upperFunction, ratio) {
+    assert(ratio >= 0 && ratio <= 1);
+
+    if (lowerFunction.isGlobalConstant && upperFunction.isGlobalConstant) {
+        return create_(mix_(lowerFunction.value, upperFunction.value, ratio));
+
+    } else if (lowerFunction.isGlobalConstant && upperFunction.isFeatureConstant) {
+        return create_(null, function(globalInput) {
+            return mix_(lowerFunction.value, upperFunction(globalInput).value, ratio);
+        });
+
+    } else if (lowerFunction.isFeatureConstant && upperFunction.isGlobalConstant) {
+        return create_(null, function(globalInput) {
+            return mix_(lowerFunction(globalInput).value, upperFunction.value, ratio);
+        });
+
+    } else if (lowerFunction.isFeatureConstant && upperFunction.isFeatureConstant) {
+        return create_(null, function(globalInput) {
+            return mix_(lowerFunction(globalInput).value, upperFunction(globalInput).value, ratio);
+        });
+
+    } else if (lowerFunction.isFeatureConstant) {
+        return create_(null, function(globalInput) {
+            return lowerFunction(globalInput).value;
+        }, function(featureInput, globalOutput) {
+            return mix_(globalOutput, upperFunction({})(featureInput), ratio);
+        });
+
+    } else if (upperFunction.isFeatureConstant) {
+        return create_(null, function(globalInput) {
+            return upperFunction(globalInput).value;
+        }, function(featureInput, globalOutput) {
+            return mix_(lowerFunction({})(featureInput), globalOutput, ratio);
+        });
+
+    } else {
+        return create_(null, null, function(featureInput) {
+            return mix_(lowerFunction({})(featureInput), upperFunction({})(featureInput), ratio);
+        });
+
+    }
+}
+
+function mix_(lowerValue, upperValue, ratio) {
+    return lowerValue * (1 - ratio) + upperValue * ratio;
+}
+
+function assert(predicate, message) {
+    if (!predicate) {
+        throw new Error(message || 'Assertion failed');
+    }
 }
