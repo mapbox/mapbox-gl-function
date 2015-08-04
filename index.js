@@ -80,6 +80,8 @@ function evaluate(parameters, values) {
         return evaluateInterval(parameters, value);
     } else if (parameters.type === 'categorical') {
         return evaluateCategorical(parameters, value);
+    } else {
+        assert(false, 'Invalid function type "' + parameters.type + '"');
     }
 }
 
