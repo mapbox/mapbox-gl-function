@@ -6,7 +6,27 @@ module.exports = create;
 module.exports.is = is;
 
 function create(parameters) {
-    var property = parameters.property !== undefined ? parameters.property : '$zoom';
+    var property = (parameters && parameters.property !== undefined) ? parameters.property : '$zoom';
+
+    // Convert old-style functions to new-style functions
+    if (parameters.stops) {
+        var domain = [];
+        var range = [];
+
+        for (var i = 0; i < parameters.stops.length; i++) {
+            domain.push(parameters.stops[i][0]);
+            range.push(parameters.stops[i][1]);
+        }
+
+        parameters.domain = domain;
+        parameters.range = range;
+        delete parameters.stops;
+
+        if (!parameters.range.every(isInterpolatable)) {
+            parameters.domain.shift();
+            parameters.type = 'interval';
+        }
+    }
 
     var feature, global;
     var isFeatureConstant = false;
@@ -110,6 +130,18 @@ function evaluateExponential(parameters, value) {
     }
 }
 
+function isNumber(value) {
+    return (
+        typeof value === "number" &&
+        isFinite(value) &&
+        Math.floor(value) === value
+    );
+}
+
+function isInterpolatable(value) {
+    return isNumber(value) || (Array.isArray(value) && value.every(isNumber));
+}
+
 function interpolate(input, base, inputLower, inputUpper, outputLower, outputUpper) {
     if (outputLower.length) {
         return interpolateArray(input, base, inputLower, inputUpper, outputLower, outputUpper);
@@ -141,7 +173,7 @@ function interpolateArray(input, base, inputLower, inputUpper, outputLower, outp
 }
 
 function is(value) {
-    return typeof value === 'object' && value.range && value.domain;
+    return typeof value === 'object' && ((value.range && value.domain) || value.stops);
 }
 
 function assert(predicate, message) {
