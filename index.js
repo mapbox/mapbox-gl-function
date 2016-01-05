@@ -1,26 +1,45 @@
 'use strict';
 
+var GLOBAL_ATTRIBUTE_PREFIX = '$';
+
 module.exports = create;
 module.exports.is = is;
 
 function create(parameters) {
+    var fun;
+
     if (!is(parameters)) {
-        return function() { return parameters; };
-    } else if (!parameters.type || parameters.type === 'exponential') {
-        return function(input) {
-            return evaluateExponentialFunction(parameters, input);
-        };
-    } else if (parameters.type === 'interval') {
-        return function(input) {
-            return evaluateIntervalFunction(parameters, input);
-        };
-    } else if (parameters.type === 'categorical') {
-        return function(input) {
-            return evaluateCategoricalFunction(parameters, input);
-        };
+        fun = function() { return parameters; };
+        fun.isFeatureConstant = true;
+        fun.isGlobalConstant = true;
+
     } else {
-        throw new Error('Unknown function type "' + parameters.type + '"');
+        var property = parameters.property === undefined ? '$zoom' : parameters.property;
+
+        var innerFun;
+        if (!parameters.type || parameters.type === 'exponential') {
+            innerFun = evaluateExponentialFunction;
+        } else if (parameters.type === 'interval') {
+            innerFun = evaluateIntervalFunction;
+        } else if (parameters.type === 'categorical') {
+            innerFun = evaluateCategoricalFunction;
+        } else {
+            throw new Error('Unknown function type "' + parameters.type + '"');
+        }
+
+        if (property[0] === GLOBAL_ATTRIBUTE_PREFIX) {
+            fun = function(global) {
+                return innerFun(parameters, global[property]);
+            };
+            fun.isFeatureConstant = true;
+        } else {
+            fun = function(global, feature) {
+                return innerFun(parameters, feature[property]);
+            };
+        }
     }
+
+    return fun;
 }
 
 function evaluateCategoricalFunction(parameters, input) {

@@ -1,7 +1,7 @@
 'use strict';
 
 var test = require('tape');
-var MapboxGLFunction = require('../');
+var MapboxGLScale = require('../');
 var MapboxGLStyleSpec = require('mapbox-gl-style-spec');
 
 function migrate(type, input) {
@@ -33,11 +33,17 @@ function migrate(type, input) {
 
 var func = {
     interpolated: function(parameters) {
-        return MapboxGLFunction(migrate('interpolated', parameters));
+        var scale = MapboxGLScale(migrate('interpolated', parameters));
+        return function(zoom) {
+            return scale({'$zoom': zoom});
+        };
     },
 
     'piecewise-constant': function(parameters) {
-        return MapboxGLFunction(migrate('piecewise-constant', parameters));
+        var scale = MapboxGLScale(migrate('piecewise-constant', parameters));
+        return function(zoom) {
+            return scale({'$zoom': zoom});
+        };
     }
 };
 
