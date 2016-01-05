@@ -48,7 +48,6 @@ function create(parameters) {
 }
 
 function evaluate(parameters, values) {
-    assert(typeof values === 'object');
     var property = parameters.property !== undefined ? parameters.property : '$zoom';
     var value = values[property];
 
@@ -61,7 +60,7 @@ function evaluate(parameters, values) {
     } else if (parameters.type === 'categorical') {
         return evaluateCategorical(parameters, value);
     } else {
-        assert(false, 'Invalid function type "' + parameters.type + '"');
+        throw new Error('Invalid function type "' + parameters.type + '"');
     }
 }
 
@@ -75,7 +74,6 @@ function evaluateCategorical(parameters, value) {
 }
 
 function evaluateInterval(parameters, value) {
-    assert(parameters.domain.length + 1 === parameters.range.length);
     for (var i = 0; i < parameters.domain.length; i++) {
         if (value < parameters.domain[i]) break;
     }
@@ -142,10 +140,4 @@ function interpolateArray(input, base, inputLower, inputUpper, outputLower, outp
 
 function is(value) {
     return typeof value === 'object' && value.range && value.domain;
-}
-
-function assert(predicate, message) {
-    if (!predicate) {
-        throw new Error(message || 'Assertion failed');
-    }
 }
