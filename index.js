@@ -1,92 +1,51 @@
 'use strict';
 
-var GLOBAL_ATTRIBUTE_PREFIX = '$';
-
 module.exports = create;
 module.exports.is = is;
 
 function create(parameters) {
-    var property = parameters.property !== undefined ? parameters.property : '$zoom';
-
-    var feature, global;
-    var isFeatureConstant = false;
-    var isGlobalConstant = false;
     if (!is(parameters)) {
-        global = function() { return feature; };
-        feature = function() { return parameters; };
-        isGlobalConstant = true;
-
-    } else if (property[0] === GLOBAL_ATTRIBUTE_PREFIX) {
-        global = function(values) {
-            var value = evaluate(parameters, values);
-            feature = function() { return value; };
-            feature.isConstant = isFeatureConstant;
-            feature.isGlobalConstant  = isGlobalConstant;
-            feature.isFeatureConstant = isFeatureConstant;
-            return feature;
-        };
-        isFeatureConstant = true;
-
-    } else {
-        global = function() { return feature; };
-        feature = function(values) { return evaluate(parameters, values); };
-    }
-
-    if (isGlobalConstant) isFeatureConstant = true;
-
-    global.isConstant = isGlobalConstant;
-    global.isGlobalConstant = isGlobalConstant;
-    global.isFeatureConstant = isFeatureConstant;
-
-    if (feature) {
-        feature.isConstant = isFeatureConstant;
-        feature.isGlobalConstant  = isGlobalConstant;
-        feature.isFeatureConstant = isFeatureConstant;
-    }
-
-    return global;
-}
-
-function evaluate(parameters, values) {
-    var property = parameters.property !== undefined ? parameters.property : '$zoom';
-    var value = values[property];
-
-    if (value === undefined) {
-        return parameters.range[0];
+        return function() { return parameters; };
     } else if (!parameters.type || parameters.type === 'exponential') {
-        return evaluateExponential(parameters, value);
+        return function(input) {
+            return evaluateExponentialFunction(parameters, input);
+        };
     } else if (parameters.type === 'interval') {
-        return evaluateInterval(parameters, value);
+        return function(input) {
+            return evaluateIntervalFunction(parameters, input);
+        };
     } else if (parameters.type === 'categorical') {
-        return evaluateCategorical(parameters, value);
+        return function(input) {
+            return evaluateCategoricalFunction(parameters, input);
+        };
     } else {
-        throw new Error('Invalid function type "' + parameters.type + '"');
+        throw new Error('Unknown function type "' + parameters.type + '"');
     }
 }
 
-function evaluateCategorical(parameters, value) {
+function evaluateCategoricalFunction(parameters, input) {
     for (var i = 0; i < parameters.domain.length; i++) {
-        if (value === parameters.domain[i]) {
+        if (input === parameters.domain[i]) {
             return parameters.range[i];
         }
     }
     return parameters.range[0];
 }
 
-function evaluateInterval(parameters, value) {
+function evaluateIntervalFunction(parameters, input) {
     for (var i = 0; i < parameters.domain.length; i++) {
-        if (value < parameters.domain[i]) break;
+        if (input < parameters.domain[i]) break;
     }
     return parameters.range[i];
 }
 
-function evaluateExponential(parameters, value) {
+function evaluateExponentialFunction(parameters, input) {
     var base = parameters.base !== undefined ? parameters.base : 1;
 
     var i = 0;
     while (true) {
         if (i >= parameters.domain.length) break;
-        else if (value <= parameters.domain[i]) break;
+        else if (input <= parameters.domain[i]) break;
         else i++;
     }
 
@@ -98,7 +57,7 @@ function evaluateExponential(parameters, value) {
 
     } else {
         return interpolate(
-            value,
+            input,
             base,
             parameters.domain[i - 1],
             parameters.domain[i],
