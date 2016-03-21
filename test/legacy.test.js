@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('tap').test;
 var MapboxGLScale = require('../');
 var MapboxGLStyleSpec = require('mapbox-gl-style-spec');
 
