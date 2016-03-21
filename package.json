@@ -4,11 +4,11 @@
   "description": "Evaluate a Mapbox GL style function",
   "devDependencies": {
     "eslint": "^0.22.1",
-    "mapbox-gl-style-spec": "git+https://github.com/mapbox/mapbox-gl-style-spec.git#aae9d8c08cae5299deea0b2c86d270ef3dc7cac1",
-    "tape": "^3.5.0"
+    "mapbox-gl-style-spec": "git+https://github.com/mapbox/mapbox-gl-style-spec.git#fe8f3a3644d38fda8558868f397dbdff3989af67",
+    "tap": "^5.7.0"
   },
   "scripts": {
-    "test": "eslint index.js test/*.js && tape test/*.js"
+    "test": "eslint index.js test/*.js && tap test/*.js --coverage"
   },
   "repository": {
     "type": "git",

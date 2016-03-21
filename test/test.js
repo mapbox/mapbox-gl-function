@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('tap').test;
 var MapboxGLScale = require('../');
 
 test('function types', function(t) {
@@ -39,7 +39,11 @@ test('function types', function(t) {
                 t.end();
             });
 
+            t.end();
+
         });
+
+        t.end();
 
     });
 
@@ -111,7 +115,11 @@ test('function types', function(t) {
                 t.end();
             });
 
+            t.end();
+
         });
+
+        t.end();
 
     });
 
@@ -144,6 +152,8 @@ test('function types', function(t) {
 
             t.end();
         });
+
+        t.end();
 
     });
 
@@ -179,7 +189,11 @@ test('function types', function(t) {
             t.end();
         });
 
+        t.end();
+
     });
+
+    t.end();
 
 });
 
