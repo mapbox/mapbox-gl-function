@@ -39,7 +39,7 @@ test('interpolated, specified base', function(t) {
     var f = MapboxGLFunction.interpolated({stops: [[1, 1], [5, 10]], base: 2});
     t.equal(f(0), 1);
     t.equal(f(1), 1);
-    t.equal(f(3), 2.8);
+    t.equal(f(3), 3.25);
     t.equal(f(5), 10);
     t.equal(f(11), 10);
     t.end();
