@@ -189,6 +189,27 @@ test('function types', function(t) {
                 t.end();
             });
 
+            t.test('three elements', function(t) {
+                var f = MapboxGLFunction({
+                    type: 'exponential',
+                    property: 'prop',
+                    base: 1,
+                    stops: [
+                        [{ zoom: 1, value: 0}, 0],
+                        [{ zoom: 1, value: 2}, 4],
+                        [{ zoom: 3, value: 0}, 0],
+                        [{ zoom: 3, value: 2}, 12],
+                        [{ zoom: 5, value: 0}, 0],
+                        [{ zoom: 5, value: 2}, 20]]
+                });
+
+                t.equal(f(0, { prop: 1 }), 2);
+                t.equal(f(1, { prop: 1 }), 2);
+                t.equal(f(2, { prop: 1 }), 4);
+
+                t.end();
+            });
+
             t.test('default', function(t) {
                 var f = MapboxGLFunction({
                     type: 'exponential',
@@ -213,27 +234,6 @@ test('function types', function(t) {
                 t.equal(f(16, { prop: 10 }), 30);
                 t.equal(f(16, { prop: undefined }), 3);
                 t.equal(f(16, { prop: 299 }), 897);
-
-                t.end();
-            });
-
-            t.test('three elements', function(t) {
-                var f = MapboxGLFunction({
-                    type: 'exponential',
-                    property: 'prop',
-                    base: 1,
-                    stops: [
-                        [{ zoom: 1, value: 0}, 0],
-                        [{ zoom: 1, value: 2}, 4],
-                        [{ zoom: 3, value: 0}, 0],
-                        [{ zoom: 3, value: 2}, 12],
-                        [{ zoom: 5, value: 0}, 0],
-                        [{ zoom: 5, value: 2}, 20]]
-                });
-
-                t.equal(f(0, { prop: 1 }), 2);
-                t.equal(f(1, { prop: 1 }), 2);
-                t.equal(f(2, { prop: 1 }), 4);
 
                 t.end();
             });
@@ -369,9 +369,10 @@ test('property', function(t) {
             type: 'categorical',
             stops: [['map', 'neat'], ['box', 'swell']],
             property: 'mapbox'
-        });
+        }, { default: 'cool' });
 
         t.equal(f({}, {mapbox: 'box'}), 'swell');
+        t.equal(f({}, {mapbox: undefined}), 'cool');
 
         t.end();
     });
