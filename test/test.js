@@ -5,7 +5,7 @@ var MapboxGLFunction = require('../').interpolated;
 
 test('function types', function(t) {
 
-    t.test('contant', function(t) {
+    t.test('constant', function(t) {
 
         t.test('range types', function(t) {
 
@@ -107,6 +107,39 @@ test('function types', function(t) {
                 t.end();
             });
 
+            t.test('property', function(t) {
+                var f = MapboxGLFunction({
+                    type: 'exponential',
+                    stops: [[0, 0], [1000, 3000]],
+                    property: 'prop'
+                });
+
+                t.equal(f(10, { prop: 0 }), 0);
+                t.equal(f(10, { prop: 1 }), 3);
+                t.equal(f(10, { prop: 100 }), 300);
+                t.equal(f(10, { prop: 1000 }), 3000);
+                t.equal(f(10, { prop: 3000 }), 3000);
+                t.equal(f(10, { prop: undefined }), 3000);
+
+                t.end();
+            });
+
+            t.test('property with reference default', function(t) {
+                var f = MapboxGLFunction({
+                    type: 'exponential',
+                    stops: [[0, 0], [1000, 3000]],
+                    property: 'prop'
+                }, { default: 10 });
+
+                t.equal(f(10, { prop: 0 }), 0);
+                t.equal(f(10, { prop: 1 }), 3);
+                t.equal(f(10, { prop: 100 }), 300);
+                t.equal(f(10, { prop: 1000 }), 3000);
+                t.equal(f(10, { prop: 3000 }), 3000);
+                t.equal(f(10, { prop: undefined }), 10);
+
+                t.end();
+            });
         });
 
         t.test('zoom + data stops', function(t) {
@@ -152,6 +185,34 @@ test('function types', function(t) {
                 t.equal(f(2, { prop: 0}), 0);
                 t.equal(f(2, { prop: 2}), 8);
                 t.equal(f(2, { prop: 3}), 8);
+
+                t.end();
+            });
+
+            t.test('default', function(t) {
+                var f = MapboxGLFunction({
+                    type: 'exponential',
+                    property: 'prop',
+                    base: 1,
+                    stops: [
+                        [{ zoom: 15, value: 0}, 0],
+                        [{ zoom: 15, value: 1000}, 0],
+                        [{ zoom: 15.1, value: 0}, 0],
+                        [{ zoom: 15.1, value: 10}, 30],
+                        [{ zoom: 15.1, value: 1000}, 3000]]
+                }, { default: 3});
+
+                t.equal(f(15, { prop: 0 }), 0);
+                t.equal(f(15, { prop: 10 }), 0);
+                t.equal(f(15, { prop: 300 }), 0);
+                t.equal(f(15.2, { prop: 0 }), 0);
+                t.equal(f(15.2, { prop: 10 }), 30);
+                t.equal(f(15.2, { prop: undefined }), 3);
+                t.equal(f(15.2, { prop: 299 }), 897);
+                t.equal(f(16, { prop: 0 }), 0);
+                t.equal(f(16, { prop: 10 }), 30);
+                t.equal(f(16, { prop: undefined }), 3);
+                t.equal(f(16, { prop: 299 }), 897);
 
                 t.end();
             });

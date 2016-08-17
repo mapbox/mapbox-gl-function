@@ -42,7 +42,7 @@ function createFunction(parameters, defaultType, reference) {
             }
 
             for (var z in featureFunctions) {
-                featureFunctionStops.push([featureFunctions[z].zoom, createFunction(featureFunctions[z])]);
+                featureFunctionStops.push([featureFunctions[z].zoom, createFunction(featureFunctions[z], type, reference)]);
             }
             fun = function(zoom, feature) {
                 return evaluateExponentialFunction({ stops: featureFunctionStops, base: parameters.base }, zoom)(zoom, feature, reference);
@@ -93,7 +93,7 @@ function evaluateIntervalFunction(parameters, input, reference) {
 }
 
 function evaluateExponentialFunction(parameters, input, reference) {
-    if (input == undefined && reference) {
+    if (input === undefined && reference) {
         return reference.default;
     }
 
