@@ -69,7 +69,7 @@ function createFunction(parameters, defaultType, reference) {
 }
 
 function evaluateCategoricalFunction(parameters, input, reference) {
-    if (input === undefined && reference) {
+    if (input === undefined && reference && reference.default) {
         return reference.default;
     }
 
@@ -82,7 +82,7 @@ function evaluateCategoricalFunction(parameters, input, reference) {
 }
 
 function evaluateIntervalFunction(parameters, input, reference) {
-    if (input === undefined && reference) {
+    if (input === undefined && reference && reference.default) {
         return reference.default;
     }
 
@@ -93,7 +93,7 @@ function evaluateIntervalFunction(parameters, input, reference) {
 }
 
 function evaluateExponentialFunction(parameters, input, reference) {
-    if (input === undefined && reference) {
+    if (input === undefined && reference && reference.default) {
         return reference.default;
     }
 
