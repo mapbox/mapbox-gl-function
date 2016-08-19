@@ -129,7 +129,7 @@ test('function types', function(t) {
                     type: 'exponential',
                     stops: [[0, 0], [1000, 3000]],
                     property: 'prop'
-                }, { default: 10 });
+                }, 10);
 
                 t.equal(f(10, { prop: 0 }), 0);
                 t.equal(f(10, { prop: 1 }), 3);
@@ -221,7 +221,7 @@ test('function types', function(t) {
                         [{ zoom: 15.1, value: 0}, 0],
                         [{ zoom: 15.1, value: 10}, 30],
                         [{ zoom: 15.1, value: 1000}, 3000]]
-                }, { default: 3});
+                }, 3);
 
                 t.equal(f(15, { prop: 0 }), 0);
                 t.equal(f(15, { prop: 10 }), 0);
@@ -369,7 +369,7 @@ test('property', function(t) {
             type: 'categorical',
             stops: [['map', 'neat'], ['box', 'swell']],
             property: 'mapbox'
-        }, { default: 'cool' });
+        }, 'cool');
 
         t.equal(f({}, {mapbox: 'box'}), 'swell');
         t.equal(f({}, {mapbox: undefined}), 'cool');
