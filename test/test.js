@@ -140,6 +140,23 @@ test('function types', function(t) {
 
                 t.end();
             });
+
+            t.test('property with 0 reference default', function(t) {
+                var f = MapboxGLFunction({
+                    type: 'exponential',
+                    stops: [[0, 0], [1000, 3000]],
+                    property: 'prop'
+                }, 0);
+
+                t.equal(f(10, { prop: 0 }), 0);
+                t.equal(f(10, { prop: 1 }), 3);
+                t.equal(f(10, { prop: 100 }), 300);
+                t.equal(f(10, { prop: 1000 }), 3000);
+                t.equal(f(10, { prop: 3000 }), 3000);
+                t.equal(f(10, { prop: undefined }), 0);
+
+                t.end();
+            });
         });
 
         t.test('zoom + data stops', function(t) {
