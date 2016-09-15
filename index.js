@@ -45,7 +45,7 @@ function createFunction(parameters, defaultType) {
                 featureFunctionStops.push([featureFunctions[z].zoom, createFunction(featureFunctions[z])]);
             }
             fun = function(zoom, feature) {
-                return evaluateExponentialFunction({ stops: featureFunctionStops, base: parameters.base }, zoom)(zoom, feature);
+                return evaluateExponentialFunction({ stops: featureFunctionStops, base: parameters.base, overflow: parameters.overflow }, zoom)(zoom, feature);
             };
             fun.isFeatureConstant = false;
             fun.isZoomConstant = false;
@@ -86,6 +86,7 @@ function evaluateIntervalFunction(parameters, input) {
 
 function evaluateExponentialFunction(parameters, input) {
     var base = parameters.base !== undefined ? parameters.base : 1;
+    var overflow = parameters.overflow || false;
 
     var i = 0;
     while (true) {
@@ -95,10 +96,10 @@ function evaluateExponentialFunction(parameters, input) {
     }
 
     if (i === 0) {
-        return parameters.stops[i][1];
+        return overflow ? calculateOverflow(input, base, parameters.stops[i], parameters.stops[i + 1]) : parameters.stops[i][1];
 
     } else if (i === parameters.stops.length) {
-        return parameters.stops[i - 1][1];
+        return overflow ? calculateOverflow(input, base, parameters.stops[i - 1], parameters.stops[i - 2]) : parameters.stops[i - 1][1];
 
     } else {
         return interpolate(
@@ -109,6 +110,28 @@ function evaluateExponentialFunction(parameters, input) {
             parameters.stops[i - 1][1],
             parameters.stops[i][1]
         );
+    }
+}
+
+function calculateOverflow(input, base, stop, prevStop) {
+    if(typeof stop[1] === 'function') return stop[1];
+    if(stop[1].length) {
+        var output = [];
+        for (var i = 0; i < stop[1].length; i++) {
+            output[i] = calculateOverflow(input, base, stop[1][i]);
+        }
+        return output;
+    }
+
+    if(base == 1) {
+        var diff = input - stop[0];
+
+        var slope = 1;
+        if(prevStop) slope = (prevStop[1] - stop[1]) / (prevStop[0] - stop[0]);
+
+        return stop[1] + diff * slope;
+    } else {
+        return Math.pow(base, input - stop[0]) * stop[1];
     }
 }
 
