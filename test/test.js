@@ -226,8 +226,8 @@ test('function types', function(t) {
                     overflow: true
                 });
 
-                t.equal(f(1), 1/2048);
-                t.equal(f(5), 1/128);
+                t.equal(f(1), 1 / 2048);
+                t.equal(f(5), 1 / 128);
                 t.equal(f(11), 0.5);
                 t.equal(f(12), 1);
                 t.equal(f(13), 2);
@@ -245,8 +245,8 @@ test('function types', function(t) {
                     overflow: true
                 });
 
-                t.equal(f(1), 1/1024);
-                t.equal(f(5), 1/64);
+                t.equal(f(1), 1 / 1024);
+                t.equal(f(5), 1 / 64);
                 t.equal(f(11), 1);
                 t.equal(f(12), 2);
                 t.equal(f(13), 4);

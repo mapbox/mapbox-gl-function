@@ -114,8 +114,8 @@ function evaluateExponentialFunction(parameters, input) {
 }
 
 function calculateOverflow(input, base, stop, prevStop) {
-    if(typeof stop[1] === 'function') return stop[1];
-    if(stop[1].length) {
+    if (typeof stop[1] === 'function') return stop[1];
+    if (stop[1].length) {
         var output = [];
         for (var i = 0; i < stop[1].length; i++) {
             output[i] = calculateOverflow(input, base, stop[1][i]);
@@ -123,11 +123,11 @@ function calculateOverflow(input, base, stop, prevStop) {
         return output;
     }
 
-    if(base == 1) {
+    if (base === 1) {
         var diff = input - stop[0];
 
         var slope = 1;
-        if(prevStop) slope = (prevStop[1] - stop[1]) / (prevStop[0] - stop[0]);
+        if (prevStop) slope = (prevStop[1] - stop[1]) / (prevStop[0] - stop[0]);
 
         return stop[1] + diff * slope;
     } else {
