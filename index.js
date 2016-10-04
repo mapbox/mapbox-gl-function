@@ -1,6 +1,6 @@
 'use strict';
 
-function createFunction(parameters, defaultType) {
+function createFunction(parameters, defaultType, specDefault) {
     var fun;
 
     if (!isFunctionDefinition(parameters)) {
@@ -44,10 +44,10 @@ function createFunction(parameters, defaultType) {
             }
 
             for (var z in featureFunctions) {
-                featureFunctionStops.push([featureFunctions[z].zoom, createFunction(featureFunctions[z])]);
+                featureFunctionStops.push([featureFunctions[z].zoom, createFunction(featureFunctions[z], type, specDefault)]);
             }
             fun = function(zoom, feature) {
-                return evaluateExponentialFunction({ stops: featureFunctionStops, base: parameters.base }, zoom)(zoom, feature);
+                return evaluateExponentialFunction({ stops: featureFunctionStops, base: parameters.base }, zoom)(zoom, feature, specDefault);
             };
             fun.isFeatureConstant = false;
             fun.isZoomConstant = false;
@@ -60,7 +60,7 @@ function createFunction(parameters, defaultType) {
             fun.isZoomConstant = false;
         } else {
             fun = function(zoom, feature) {
-                return innerFun(parameters, feature[parameters.property]);
+                return innerFun(parameters, feature[parameters.property], specDefault);
             };
             fun.isFeatureConstant = false;
             fun.isZoomConstant = true;
@@ -70,7 +70,11 @@ function createFunction(parameters, defaultType) {
     return fun;
 }
 
-function evaluateCategoricalFunction(parameters, input) {
+function evaluateCategoricalFunction(parameters, input, specDefault) {
+    if (input === undefined && typeof specDefault !== 'undefined') {
+        return specDefault;
+    }
+
     for (var i = 0; i < parameters.stops.length; i++) {
         if (input === parameters.stops[i][0]) {
             return parameters.stops[i][1];
@@ -79,14 +83,22 @@ function evaluateCategoricalFunction(parameters, input) {
     return parameters.stops[0][1];
 }
 
-function evaluateIntervalFunction(parameters, input) {
+function evaluateIntervalFunction(parameters, input, specDefault) {
+    if (input === undefined && typeof specDefault !== 'undefined') {
+        return specDefault;
+    }
+
     for (var i = 0; i < parameters.stops.length; i++) {
         if (input < parameters.stops[i][0]) break;
     }
     return parameters.stops[Math.max(i - 1, 0)][1];
 }
 
-function evaluateExponentialFunction(parameters, input) {
+function evaluateExponentialFunction(parameters, input, specDefault) {
+    if (input === undefined && typeof specDefault !== 'undefined') {
+        return specDefault;
+    }
+
     var base = parameters.base !== undefined ? parameters.base : 1;
 
     var i = 0;
@@ -162,10 +174,10 @@ function isFunctionDefinition(value) {
 
 module.exports.isFunctionDefinition = isFunctionDefinition;
 
-module.exports.interpolated = function(parameters) {
-    return createFunction(parameters, 'exponential');
+module.exports.interpolated = function(parameters, specDefault) {
+    return createFunction(parameters, 'exponential', specDefault);
 };
 
-module.exports['piecewise-constant'] = function(parameters) {
-    return createFunction(parameters, 'interval');
+module.exports['piecewise-constant'] = function(parameters, specDefault) {
+    return createFunction(parameters, 'interval', specDefault);
 };
