@@ -176,7 +176,7 @@ function interpolateNumber(input, base, inputLower, inputUpper, outputLower, out
     if (base === 1) {
         ratio = progress / difference;
     } else {
-        ratio = (Math.pow(base, progress) - 1) / (Math.pow(base, difference) - 1);
+        ratio = Math.pow(base, progress - difference);
     }
 
     return (outputLower * (1 - ratio)) + (outputUpper * ratio);

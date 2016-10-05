@@ -45,6 +45,29 @@ test('function types', function(t) {
 
     t.test('exponential', function(t) {
 
+        t.test('base 0', function(t) {
+            var f = MapboxGLFunction({
+                type: 'exponential',
+                stops: [[0, 0], [20, 1024]],
+                base: 2
+            });
+
+            t.equal(f(0), 0);
+            t.equal(f(10), 1);
+            t.equal(f(11), 2);
+            t.equal(f(12), 4);
+            t.equal(f(13), 8);
+            t.equal(f(14), 16);
+            t.equal(f(15), 32);
+            t.equal(f(16), 64);
+            t.equal(f(17), 128);
+            t.equal(f(18), 256);
+            t.equal(f(19), 512);
+            t.equal(f(20), 1024);
+
+            t.end();
+        });
+
         t.test('base', function(t) {
             var f = MapboxGLFunction({
                 type: 'exponential',
@@ -54,7 +77,7 @@ test('function types', function(t) {
 
             t.equal(f(0), 2);
             t.equal(f(1), 2);
-            t.equal(f(2), 30 / 9);
+            t.equal(f(2), 4);
             t.equal(f(3), 6);
             t.equal(f(4), 6);
 
