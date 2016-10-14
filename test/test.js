@@ -269,7 +269,6 @@ test('function types', function(t) {
 
         t.test('is the default type for string inputs', function(t) {
             var f = MapboxGLFunction({
-                type: 'categorical',
                 stops: [['umpteen', 42]]
             });
 
