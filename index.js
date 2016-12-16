@@ -119,8 +119,8 @@ function evaluateIntervalFunction(parameters, input) {
     // Edge cases
     var n = parameters.stops.length;
     if (n === 1) return parameters.stops[0][1];
-    if (input < parameters.stops[0][0]) return parameters.stops[0][1];
-    if (input > parameters.stops[n - 1][0]) return parameters.stops[n - 1][1];
+    if (input <= parameters.stops[0][0]) return parameters.stops[0][1];
+    if (input >= parameters.stops[n - 1][0]) return parameters.stops[n - 1][1];
 
     // Binary search
     var lowerIndex = 0;
@@ -144,39 +144,46 @@ function evaluateIntervalFunction(parameters, input) {
     }
 
     return parameters.stops[Math.max(currentIndex - 1, 0)][1];
-
-    // for (var i = 0; i < parameters.stops.length; i++) {
-    //     if (input < parameters.stops[i][0]) break;
-    // }
-    // return parameters.stops[Math.max(i - 1, 0)][1];
 }
 
 function evaluateExponentialFunction(parameters, input) {
     var base = parameters.base !== undefined ? parameters.base : 1;
 
-    var i = 0;
-    while (true) {
-        if (i >= parameters.stops.length) break;
-        else if (input <= parameters.stops[i][0]) break;
-        else i++;
+    // Edge cases
+    var n = parameters.stops.length;
+    if (n === 1) return parameters.stops[0][1];
+    if (input <= parameters.stops[0][0]) return parameters.stops[0][1];
+    if (input >= parameters.stops[n - 1][0]) return parameters.stops[n - 1][1];
+
+    // Binary search
+    var lowerIndex = 0;
+    var upperIndex = n - 1;
+    var currentIndex = 0;
+    var currentValue;
+
+    while (lowerIndex <= upperIndex) {
+      currentIndex = Math.floor((lowerIndex + upperIndex) / 2);
+      currentValue = parameters.stops[currentIndex][0];
+      if (currentValue === input) {
+        currentIndex += 1;
+        break;
+      } else if (currentValue < input) {
+        lowerIndex = currentIndex + 1;
+      } else if (currentValue > input) {
+        upperIndex = currentIndex - 1;
+      }
     }
 
-    if (i === 0) {
-        return parameters.stops[i][1];
+    currentIndex = Math.max(currentIndex - 1, 0);
 
-    } else if (i === parameters.stops.length) {
-        return parameters.stops[i - 1][1];
-
-    } else {
-        return interpolate(
+    return interpolate(
             input,
             base,
-            parameters.stops[i - 1][0],
-            parameters.stops[i][0],
-            parameters.stops[i - 1][1],
-            parameters.stops[i][1]
-        );
-    }
+            parameters.stops[currentIndex][0],
+            parameters.stops[currentIndex + 1][0],
+            parameters.stops[currentIndex][1],
+            parameters.stops[currentIndex + 1][1]
+    );
 }
 
 function evaluateIdentityFunction(parameters, input) {
