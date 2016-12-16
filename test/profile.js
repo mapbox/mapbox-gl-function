@@ -3,8 +3,8 @@
 var MapboxGLFunction = require('../').interpolated;
 
 
-// Build a long list of stops
-function buildFunction(stopsCount) {
+function buildExponentialFunction(stopsCount) {
+  // Build an exponential function with a long list of stops
   var stops = [];
   for (var i = 0; i < stopsCount; i++) {
     stops.push([i, i * 2]);
@@ -16,10 +16,23 @@ function buildFunction(stopsCount) {
   });
 }
 
+function buildCategoricalFunction(stopsCount, useStrings) {
+  // Build a categorical function with a long list of stops
+  var stops = [];
+  for (var i = 0; i < stopsCount; i++) {
+    stops.push([useStrings ? String(i) : i, i * 2]);
+  }
 
-function profileFunction(stops, iterations) {
-  var f = buildFunction(stops);
-  console.log("\n\n>>> Evaluating " + iterations + " iterations with " + stops + " stops");
+  return  MapboxGLFunction({
+      type: 'categorical',
+      stops: stops
+  });
+}
+
+
+function profileExponentialFunction(stops, iterations) {
+  var f = buildExponentialFunction(stops);
+  console.log("\n\n>>> Evaluating exponential function for " + iterations + " iterations with " + stops + " stops");
   console.log("Only include values within the domain of stops:");
   console.time("Time");
   var value;
@@ -38,7 +51,31 @@ function profileFunction(stops, iterations) {
   console.timeEnd("Time");
 }
 
+function profileCategoricalFunction(stops, iterations) {
+  var f = buildCategoricalFunction(stops);
+  console.log("\n\n>>> Evaluating categorical function for " + iterations + " iterations with " + stops + " stops");
+  console.log("Using strings as categories:");
+  console.time("Time");
+  var value;
+  for (var i = 0; i < iterations; i++) {
+    value = String(Math.floor(Math.random() * stops));
+    f(value);
+  }
+  console.timeEnd("Time");
 
-profileFunction(10000, 100000);
-profileFunction(100, 100000);
-profileFunction(10, 1000000);
+  console.log("Using integers as categories:");
+  console.time("Time");
+  for (i = 0; i < iterations; i++) {
+    value = Math.floor(Math.random() * stops);
+    f(value);
+  }
+  console.timeEnd("Time");
+}
+
+profileExponentialFunction(10000, 100000);
+profileExponentialFunction(100, 100000);
+profileExponentialFunction(10, 1000000);
+
+profileCategoricalFunction(10000, 10000);
+profileCategoricalFunction(100, 10000);
+profileCategoricalFunction(10, 100000);

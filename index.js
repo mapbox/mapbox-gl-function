@@ -89,12 +89,31 @@ function createFunction(parameters, defaultType) {
 
         } else if (zoomDependent) {
             fun = function(zoom) {
+                if (innerFun === evaluateCategoricalFunction) {
+                  // Generate an Object as a hashmap of the input stops for fast searching
+                  var hashedStops = {};
+                  for (var i = 0; i < parameters.stops.length; i++) {
+                    hashedStops[parameters.stops[i][0]] = parameters.stops[i][1];
+                  }
+
+                  return outputFunction(innerFun(parameters, zoom, hashedStops));
+                }
+
                 return outputFunction(innerFun(parameters, zoom));
             };
             fun.isFeatureConstant = true;
             fun.isZoomConstant = false;
         } else {
             fun = function(zoom, feature) {
+                if (innerFun === evaluateCategoricalFunction) {
+                  // Generate an Object as a hashmap of the input stops for fast searching
+                  var hashedStops = {};
+                  for (var i = 0; i < parameters.stops.length; i++) {
+                    hashedStops[parameters.stops[i][0]] = parameters.stops[i][1];
+                  }
+
+                  return outputFunction(innerFun(parameters, feature[parameters.property], hashedStops));
+                }
                 return outputFunction(
                   innerFun(parameters, feature[parameters.property]));
             };
@@ -106,13 +125,14 @@ function createFunction(parameters, defaultType) {
     return fun;
 }
 
-function evaluateCategoricalFunction(parameters, input) {
-    for (var i = 0; i < parameters.stops.length; i++) {
-        if (input === parameters.stops[i][0]) {
-            return parameters.stops[i][1];
-        }
+function evaluateCategoricalFunction(parameters, input, hashedStops) {
+    var value = hashedStops[input];
+    if (value === undefined) {
+      // If the input is not found, return the first value from the original array by default
+      return parameters.stops[0][1];
     }
-    return parameters.stops[0][1];
+
+    return value;
 }
 
 function evaluateIntervalFunction(parameters, input) {
