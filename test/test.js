@@ -496,17 +496,17 @@ test('function types', function(t) {
                 t.end();
             });
 
-            // t.test('property function, missing property', function(t) {
-            //     var f = MapboxGLFunction({
-            //         property: 'foo',
-            //         type: 'interval',
-            //         stops: [[0, 'bad'], [1, 'good'], [2, 'bad']]
-            //     });
-            //
-            //     t.equal(f(0, {}), 'good');
-            //
-            //     t.end();
-            // });
+            t.test('property function, missing property', function(t) {
+                var f = MapboxGLFunction({
+                    property: 'foo',
+                    type: 'interval',
+                    stops: [[0, 'zero'], [1, 'one'], [2, 'two']]
+                });
+
+                t.equal(f(0, {}), 'zero');
+
+                t.end();
+            });
 
             t.end();
         });
