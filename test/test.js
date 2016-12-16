@@ -321,6 +321,7 @@ test('function types', function(t) {
             t.equal(f('umpteen'), 42);
             t.equal(f('eleventy'), 110);
             t.equal(f('derp'), 42);
+            t.equal(f('toString'), 42);
 
             t.end();
         });

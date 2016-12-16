@@ -62,7 +62,7 @@ function createFunction(parameters, defaultType) {
 
         // For categorical functions, generate an Object as a hashmap of the stops for fast searching
         if (innerFun === evaluateCategoricalFunction) {
-          var hashedStops = {};
+          var hashedStops = Object.create(null);
           for (var i = 0; i < parameters.stops.length; i++) {
             hashedStops[parameters.stops[i][0]] = parameters.stops[i][1];
           }
