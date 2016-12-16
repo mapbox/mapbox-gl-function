@@ -52,7 +52,7 @@ function profileExponentialFunction(stops, iterations) {
 }
 
 function profileCategoricalFunction(stops, iterations) {
-  var f = buildCategoricalFunction(stops);
+  var f = buildCategoricalFunction(stops, true);
   console.log("\n\n>>> Evaluating categorical function for " + iterations + " iterations with " + stops + " stops");
   console.log("Using strings as categories:");
   console.time("Time");
@@ -63,10 +63,29 @@ function profileCategoricalFunction(stops, iterations) {
   }
   console.timeEnd("Time");
 
+  console.log("Using values not included in string  categories:");
+  console.time("Time");
+  var value;
+  for (var i = 0; i < iterations; i++) {
+    value = String(Math.floor(Math.random() * stops * 2));
+    f(value);
+  }
+  console.timeEnd("Time");
+
+  f = buildCategoricalFunction(stops, false);
   console.log("Using integers as categories:");
   console.time("Time");
   for (i = 0; i < iterations; i++) {
     value = Math.floor(Math.random() * stops);
+    f(value);
+  }
+  console.timeEnd("Time");
+
+  f = buildCategoricalFunction(stops, false);
+  console.log("Using values not included in integer categories:");
+  console.time("Time");
+  for (i = 0; i < iterations; i++) {
+    value = Math.floor(Math.random() * stops * 2);
     f(value);
   }
   console.timeEnd("Time");
@@ -79,3 +98,4 @@ profileExponentialFunction(10, 1000000);
 profileCategoricalFunction(10000, 10000);
 profileCategoricalFunction(100, 10000);
 profileCategoricalFunction(10, 100000);
+profileCategoricalFunction(100, 10000);
