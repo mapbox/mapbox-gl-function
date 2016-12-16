@@ -122,28 +122,9 @@ function evaluateIntervalFunction(parameters, input) {
     if (input <= parameters.stops[0][0]) return parameters.stops[0][1];
     if (input >= parameters.stops[n - 1][0]) return parameters.stops[n - 1][1];
 
-    // Binary search
-    var lowerIndex = 0;
-    var upperIndex = n - 1;
-    var currentIndex = 0;
-    var currentValue;
+    var index = binarySearchForIndex(parameters.stops, input);
 
-    while (lowerIndex <= upperIndex) {
-      currentIndex =  Math.floor((lowerIndex + upperIndex) / 2);
-      currentValue = parameters.stops[currentIndex][0];
-      if (currentValue === input) {
-        currentIndex += 1;
-        break;
-      }
-      else if (currentValue < input) {
-        lowerIndex = currentIndex + 1;
-      }
-      else if (currentValue > input) {
-        upperIndex = currentIndex - 1;
-      }
-    }
-
-    return parameters.stops[Math.max(currentIndex - 1, 0)][1];
+    return parameters.stops[index][1];
 }
 
 function evaluateExponentialFunction(parameters, input) {
@@ -155,34 +136,15 @@ function evaluateExponentialFunction(parameters, input) {
     if (input <= parameters.stops[0][0]) return parameters.stops[0][1];
     if (input >= parameters.stops[n - 1][0]) return parameters.stops[n - 1][1];
 
-    // Binary search
-    var lowerIndex = 0;
-    var upperIndex = n - 1;
-    var currentIndex = 0;
-    var currentValue;
-
-    while (lowerIndex <= upperIndex) {
-      currentIndex = Math.floor((lowerIndex + upperIndex) / 2);
-      currentValue = parameters.stops[currentIndex][0];
-      if (currentValue === input) {
-        currentIndex += 1;
-        break;
-      } else if (currentValue < input) {
-        lowerIndex = currentIndex + 1;
-      } else if (currentValue > input) {
-        upperIndex = currentIndex - 1;
-      }
-    }
-
-    currentIndex = Math.max(currentIndex - 1, 0);
+    var index = binarySearchForIndex(parameters.stops, input);
 
     return interpolate(
             input,
             base,
-            parameters.stops[currentIndex][0],
-            parameters.stops[currentIndex + 1][0],
-            parameters.stops[currentIndex][1],
-            parameters.stops[currentIndex + 1][1]
+            parameters.stops[index][0],
+            parameters.stops[index + 1][0],
+            parameters.stops[index][1],
+            parameters.stops[index + 1][1]
     );
 }
 
@@ -190,6 +152,28 @@ function evaluateIdentityFunction(parameters, input) {
     return input;
 }
 
+function binarySearchForIndex(stops, input) {
+  var n = stops.length;
+  var lowerIndex = 0;
+  var upperIndex = n - 1;
+  var currentIndex = 0;
+  var currentValue;
+
+  while (lowerIndex <= upperIndex) {
+    currentIndex = Math.floor((lowerIndex + upperIndex) / 2);
+    currentValue = stops[currentIndex][0];
+    if (currentValue === input) {
+      currentIndex += 1;
+      break;
+    } else if (currentValue < input) {
+      lowerIndex = currentIndex + 1;
+    } else if (currentValue > input) {
+      upperIndex = currentIndex - 1;
+    }
+  }
+
+  return Math.max(currentIndex - 1, 0);
+}
 
 function interpolate(input, base, inputLower, inputUpper, outputLower, outputUpper) {
     if (typeof outputLower === 'function') {
