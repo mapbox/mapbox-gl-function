@@ -226,7 +226,7 @@ test('function types', function(t) {
                         stops: [[0, 0], [1, 2]]
                     });
 
-                    t.equal(f(0, {}), 0);
+                    t.equal(f(0, {}), 2);
 
                     t.end();
                 });
@@ -503,7 +503,7 @@ test('function types', function(t) {
                     stops: [[0, 'zero'], [1, 'one'], [2, 'two']]
                 });
 
-                t.equal(f(0, {}), 'zero');
+                t.equal(f(0, {}), 'two');
 
                 t.end();
             });
