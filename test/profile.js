@@ -65,8 +65,7 @@ function profileCategoricalFunction(stops, iterations) {
 
   console.log("Using values not included in string  categories:");
   console.time("Time");
-  var value;
-  for (var i = 0; i < iterations; i++) {
+  for (i = 0; i < iterations; i++) {
     value = String(Math.floor(Math.random() * stops * 2));
     f(value);
   }
