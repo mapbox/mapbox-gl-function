@@ -59,6 +59,15 @@ function createFunction(parameters, defaultType) {
             outputFunction = identityFunction;
         }
 
+
+        // For categorical functions, generate an Object as a hashmap of the stops for fast searching
+        if (innerFun === evaluateCategoricalFunction) {
+          var hashedStops = {};
+          for (var i = 0; i < parameters.stops.length; i++) {
+            hashedStops[parameters.stops[i][0]] = parameters.stops[i][1];
+          }
+        }
+
         if (zoomAndFeatureDependent) {
             var featureFunctions = {};
             var featureFunctionStops = [];
@@ -90,31 +99,18 @@ function createFunction(parameters, defaultType) {
         } else if (zoomDependent) {
             fun = function(zoom) {
                 if (innerFun === evaluateCategoricalFunction) {
-                  // Generate an Object as a hashmap of the input stops for fast searching
-                  var hashedStops = {};
-                  for (var i = 0; i < parameters.stops.length; i++) {
-                    hashedStops[parameters.stops[i][0]] = parameters.stops[i][1];
-                  }
-
                   return outputFunction(innerFun(parameters, zoom, hashedStops));
                 }
-
-                return outputFunction(innerFun(parameters, zoom));
+                else return outputFunction(innerFun(parameters, zoom));
             };
             fun.isFeatureConstant = true;
             fun.isZoomConstant = false;
         } else {
             fun = function(zoom, feature) {
                 if (innerFun === evaluateCategoricalFunction) {
-                  // Generate an Object as a hashmap of the input stops for fast searching
-                  var hashedStops = {};
-                  for (var i = 0; i < parameters.stops.length; i++) {
-                    hashedStops[parameters.stops[i][0]] = parameters.stops[i][1];
-                  }
-
                   return outputFunction(innerFun(parameters, feature[parameters.property], hashedStops));
                 }
-                return outputFunction(
+                else return outputFunction(
                   innerFun(parameters, feature[parameters.property]));
             };
             fun.isFeatureConstant = false;
