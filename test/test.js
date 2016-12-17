@@ -120,23 +120,23 @@ test('function types', function(t) {
                 t.end();
             });
 
-            t.test('four elements', function(t) {
+            t.test('100 domain elements', function(t) {
+                var stops = [];
+                for (var i = 0; i < 100; i++) {
+                  stops.push([i, i * 10]);
+                }
                 var f = MapboxGLFunction({
                     type: 'exponential',
-                    stops: [[1, 2], [3, 6], [5, 10], [7, 14]]
+                    stops: stops
                 });
 
-                t.equal(f(0), 2);
-                t.equal(f(1), 2);
-                t.equal(f(2), 4);
-                t.equal(f(2.5), 5);
-                t.equal(f(3), 6);
-                t.equal(f(4), 8);
-                t.equal(f(4.5), 9);
-                t.equal(f(5), 10);
-                t.equal(f(6), 12);
-                t.equal(f(7), 14);
-                t.equal(f(8), 14);
+                t.equal(f(-1.5), 0);
+                t.equal(f(0), 0);
+                t.equal(f(0.5), 5);
+                t.equal(f(1), 10);
+                t.equal(f(1.5), 15);
+                t.equal(f(99), 990);
+                t.equal(f(999), 990);
 
                 t.end();
             });
@@ -453,20 +453,23 @@ test('function types', function(t) {
             t.end();
         });
 
-        t.test('four domain elements', function(t) {
+        t.test('100 domain elements', function(t) {
+            var stops = [];
+            for (var i = 0; i < 100; i++) {
+              stops.push([i, i * 10]);
+            }
             var f = MapboxGLFunction({
                 type: 'interval',
-                stops: [[-1, 11], [0, 111], [1, 1111], [2, 11111]]
+                stops: stops
             });
+            console.log(stops);
 
-            t.equal(f(-1.5), 11);
-            t.equal(f(-0.5), 11);
-            t.equal(f(0), 111);
-            t.equal(f(0.5), 111);
-            t.equal(f(1), 1111);
-            t.equal(f(1.5), 1111);
-            t.equal(f(2), 11111);
-            t.equal(f(2.5), 11111);
+            t.equal(f(-1.5), 0);
+            t.equal(f(0), 0);
+            t.equal(f(0.5), 0);
+            t.equal(f(1), 10);
+            t.equal(f(99), 990);
+            t.equal(f(999), 990);
 
             t.end();
         });

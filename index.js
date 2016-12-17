@@ -22,10 +22,14 @@ function createFunction(parameters, defaultType) {
         var type = parameters.type || defaultType || (inputType === 'string' ? 'categorical' : 'exponential');
 
         var innerFun;
-        if (type === 'exponential') {
+        if (type === 'exponential' && parameters.stops.length >= 100) {
+            innerFun = evaluateExponentialFunctionBinarySearch;
+        } else if (type === 'exponential') {
             innerFun = evaluateExponentialFunction;
+        } else if (type === 'interval' && parameters.stops.length >= 100) {
+            innerFun = evaluateIntervalFunctionBinarySearch;
         } else if (type === 'interval') {
-            innerFun = evaluateIntervalFunction;
+          innerFun = evaluateIntervalFunction;
         } else if (type === 'categorical') {
             innerFun = evaluateCategoricalFunction;
         } else if (type === 'identity') {
@@ -132,6 +136,41 @@ function evaluateCategoricalFunction(parameters, input, hashedStops) {
 }
 
 function evaluateIntervalFunction(parameters, input) {
+    for (var i = 0; i < parameters.stops.length; i++) {
+        if (input < parameters.stops[i][0]) break;
+    }
+    return parameters.stops[Math.max(i - 1, 0)][1];
+}
+
+function evaluateExponentialFunction(parameters, input) {
+    var base = parameters.base !== undefined ? parameters.base : 1;
+
+    var i = 0;
+    while (true) {
+        if (i >= parameters.stops.length) break;
+        else if (input <= parameters.stops[i][0]) break;
+        else i++;
+    }
+
+    if (i === 0) {
+        return parameters.stops[i][1];
+
+    } else if (i === parameters.stops.length) {
+        return parameters.stops[i - 1][1];
+
+    } else {
+        return interpolate(
+            input,
+            base,
+            parameters.stops[i - 1][0],
+            parameters.stops[i][0],
+            parameters.stops[i - 1][1],
+            parameters.stops[i][1]
+        );
+    }
+}
+
+function evaluateIntervalFunctionBinarySearch(parameters, input) {
     // Edge cases
     var n = parameters.stops.length;
     if (n === 1) return parameters.stops[0][1];
@@ -144,7 +183,7 @@ function evaluateIntervalFunction(parameters, input) {
     return parameters.stops[index][1];
 }
 
-function evaluateExponentialFunction(parameters, input) {
+function evaluateExponentialFunctionBinarySearch(parameters, input) {
     var base = parameters.base !== undefined ? parameters.base : 1;
 
     // Edge cases

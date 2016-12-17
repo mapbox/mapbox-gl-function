@@ -1,6 +1,6 @@
 'use strict';
 
-var MapboxGLFunction = require('../').interpolated;
+var MapboxGLFunction = require('.').interpolated;
 
 
 function buildExponentialFunction(stopsCount) {
@@ -93,8 +93,9 @@ function profileCategoricalFunction(stops, iterations) {
 profileExponentialFunction(10000, 100000);
 profileExponentialFunction(100, 100000);
 profileExponentialFunction(10, 1000000);
+profileExponentialFunction(2, 1000000);
 
 profileCategoricalFunction(10000, 10000);
 profileCategoricalFunction(100, 10000);
 profileCategoricalFunction(10, 100000);
-profileCategoricalFunction(100, 10000);
+profileCategoricalFunction(2, 10000);
