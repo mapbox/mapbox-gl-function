@@ -1,3 +1,3 @@
-This repository has been merged with [`mapbox-gl-style-spec`](https://github.com/mapbox/mapbox-gl-style-spec).
+This repository has been merged with [`mapbox-gl-js`](https://github.com/mapbox/mapbox-gl-js).
 
 ![tumbleweed](https://media.giphy.com/media/O38dU2kkQ9sWc/giphy.gif)
